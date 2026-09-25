@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Motion Reel ’26</title>
+<style>
+  @font-face { font-family: "Inter"; src: url(fonts/inter-var.woff2) format("woff2"); font-weight: 100 900; font-display: block; }
+  @font-face { font-family: "Instrument Serif"; src: url(fonts/instrument-serif-italic.woff2) format("woff2"); font-style: italic; font-display: block; }
+  @font-face { font-family: "JetBrains Mono"; src: url(fonts/jetbrains-mono.woff2) format("woff2"); font-weight: 500; font-display: block; }
+  @font-face { font-family: "Space Grotesk"; src: url(fonts/space-grotesk.woff2) format("woff2"); font-weight: 700; font-display: block; }
+  :root { --ink: #0C0C10; --paper: #EFEAE0; --coral: #FF4B2B; }
+  html, body { margin: 0; background: var(--ink); color: var(--paper); font: 500 13px "JetBrains Mono", monospace; }
+  body.capture { overflow: hidden; }
+  main { max-width: 1280px; margin: 0 auto; padding: 16px; }
+  canvas#out { width: 100%; height: auto; display: block; background: #000; aspect-ratio: 16 / 9; }
+  body.capture main { max-width: none; padding: 0; }
+  body.capture canvas#out { width: 1920px; height: 1080px; }
+  body.capture #bar { display: none; }
+  #bar { display: flex; gap: 12px; align-items: center; margin-top: 12px; }
+  #bar button { background: var(--coral); color: var(--ink); border: 0; border-radius: 999px; width: 44px; height: 44px; font-size: 15px; cursor: pointer; }
+  #bar input { flex: 1; accent-color: var(--coral); }
+  #tc { min-width: 120px; text-align: right; letter-spacing: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <canvas id="out" width="1920" height="1080"></canvas>
+  <div id="bar"><button id="play" aria-label="Play">▶</button><input id="scrub" type="range" min="0" value="0"><span id="tc">00:00:00:00</span></div>
+  <audio id="audio" src="../out/soundtrack.m4a" preload="auto"></audio>
+</main>
+<script>if (new URLSearchParams(location.search).has('capture')) document.body.classList.add('capture');</script>
+<script src="lib.js"></script>
+<script src="gl.js"></script>
+<script src="scenes.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

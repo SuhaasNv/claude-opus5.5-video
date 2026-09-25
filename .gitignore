@@ -1,0 +1,4 @@
+node_modules/
+out/stills/
+out/*.wav
+out/reel_silent.mp4
