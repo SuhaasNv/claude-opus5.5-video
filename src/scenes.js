@@ -755,7 +755,7 @@ function sLiquid(ctx, t) {
 //  because every scene is a pure function of time. Cut points are on frames.
 // ═════════════════════════════════════════════════════════════════════════════
 const CUTS = [
-  // [start frame, scene fn, source time, invert, scene index for HUD]
+  // [start frame, scene fn, source time, invert]
   [735, sType, 2.05, 0, 1],
   [743, sShapes, 4.6, 0, 2],
   [750, sParticles, 6.55, 0, 3],
@@ -774,7 +774,7 @@ function sMontage(ctx, t) {
   ctx.translate(CX, CY); ctx.scale(punch, punch); ctx.translate(-CX, -CY);
   const r = c[1](ctx, c[2] + lt) || {};
   ctx.restore();
-  return { ...r, invert: c[3], hudScene: c[4] };
+  return { ...r, invert: c[3] };
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -898,7 +898,7 @@ function sResolve(ctx, t) {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  Timeline, camera energy, HUD
+//  Timeline and camera energy
 // ═════════════════════════════════════════════════════════════════════════════
 const SCENES = [
   { id: '01', name: 'IGNITION', a: 0.0, fn: sIgnite },
@@ -926,45 +926,6 @@ function timecode(t) {
   return `00:00:${p(ss)}:${p(ff)}`;
 }
 
-function hud(ctx, t, tone, si) {
-  const a = prog(t, 0.3, 0.7) * (1 - prog(t, 13.0, 13.2)) + prog(t, 14.2, 14.5) * (1 - prog(t, 14.78, 14.92)) * 0.8;
-  if (a <= 0.001) return;
-  const col = tone === 'dark' ? C.ink : C.paper;
-  ctx.save();
-  ctx.font = font(15, F.mono, 500); ctx.letterSpacing = '3px';
-  ctx.fillStyle = rgba(col, 0.85 * a);
-  ctx.fillText('CLAUDE  ·  MOTION REEL ’26', 64, 70);
-  ctx.textAlign = 'right';
-  ctx.fillText(`TC ${timecode(t)}`, W - 64, 70);
-  // beat meter
-  const beat = Math.floor(t / BEAT + 1e-6), ph = t / BEAT - beat;
-  for (let k = 0; k < 4; k++) {
-    const on = beat % 4 === k;
-    ctx.fillStyle = rgba(on ? C.coral : col, on ? a : 0.3 * a);
-    const s = on ? 10 + 6 * Math.exp(-ph * 6) : 10;
-    ctx.fillRect(W - 64 - (3 - k) * 26 - s, H - 76 - s / 2, s, s);
-  }
-  ctx.fillStyle = rgba(col, 0.6 * a);
-  ctx.fillText('120 BPM', W - 64 - 4 * 26 - 14, H - 70);
-  // scene slate with a slot-machine change
-  ctx.textAlign = 'left';
-  const sc = SCENES[si], cur = sceneIndex(t), since = t - (cur === 7 ? cutAt(t)[0] / FPS : SCENES[cur].a);
-  const e = E.outExpo(clamp(since / 0.3));
-  ctx.save(); ctx.beginPath(); ctx.rect(56, H - 100, 700, 44); ctx.clip();
-  ctx.fillStyle = rgba(col, 0.9 * a);
-  ctx.fillText(`${sc.id} — ${sc.name}`, 64, H - 70 + (1 - e) * 30);
-  ctx.restore();
-  // crop marks
-  ctx.strokeStyle = rgba(col, 0.45 * a); ctx.lineWidth = 1.5;
-  const m = 34, l = 22;
-  ctx.beginPath();
-  for (const [x, y, dx, dy] of [[m, m, 1, 1], [W - m, m, -1, 1], [W - m, H - m, -1, -1], [m, H - m, 1, -1]]) {
-    ctx.moveTo(x, y + dy * l); ctx.lineTo(x, y); ctx.lineTo(x + dx * l, y);
-  }
-  ctx.stroke();
-  ctx.restore();
-}
-
 // Render one instant into the 2D canvas. Returns lens settings.
 function drawInstant(ctx, t) {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -979,7 +940,6 @@ function drawInstant(ctx, t) {
   ctx.translate(CX + sx, CY + sy); ctx.scale(zoom, zoom); ctx.translate(-CX, -CY);
   const r = sc.fn(ctx, t) || {};
   ctx.restore();
-  hud(ctx, t, r.tone || 'light', r.hudScene !== undefined ? r.hudScene : si);
   return {
     chroma: 0.12 + imp * 1.5, warp: imp * 0.9, grain: 0.055, vig: 0.38,
     liquid: r.liquid || 0, liqT: r.liqT || 0, refract: r.refract || 0,
