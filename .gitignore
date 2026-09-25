@@ -2,3 +2,5 @@ node_modules/
 out/stills/
 out/*.wav
 out/reel_silent.mp4
+out/showreel_master.mp4
+out/render.log
